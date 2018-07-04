@@ -6,6 +6,9 @@ ValidTabQ::usage =
 TabSwaps6::usage =
     "given a tab, give all swap candidates"
 
+BfsTabScan::usage = 
+    "find all tabs followed by GenNodes"
+
 Begin["`Private`"]
 
 (* ValidTabQ *)
@@ -73,7 +76,8 @@ TabSwap[tab_, {x1_, y1_}, {x2_, y2_}] := Module[
 NIT [x_, y_] := Nothing /; IntersectingQ[x, y];
 NIT [x_, y_] := {x, y};
 
-swapPos6 = Module[
+swapPos6 = Module[ 
+    (* In order to accelerate swapping *)
     {l=6, a, t, p, x},
     a = Array[1&, {l, l}];
     l = LowerTriangularize[a, -1];
@@ -86,6 +90,15 @@ TabSwaps6[tab_] := Apply[TabSwap[tab, ##]&, swapPos6, {1}]
 
 (* ~TabSwaps *)
 
+BfsTabScan[tab_, GetNode_] := Module[
+    {bfsS},
+    bfsS[{},close_]:=close;
+    bfsS[open_, close_]:=bfsS[
+        Union[Rest@open,Complement[GetNode@First@open, close]],
+        Append[close, First@open]
+    ];
+    bfsS[{tab}, {}]
+]
 End[ ]
 
 EndPackage[ ]
