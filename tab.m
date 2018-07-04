@@ -86,16 +86,20 @@ swapPos6 = Module[
     Flatten[x, {1, 2}]
 ];
 
-TabSwaps6[tab_] := Apply[TabSwap[tab, ##]&, swapPos6, {1}]
+TabSwaps6[tab_] := SparseArray/@Apply[TabSwap[tab, ##]&, swapPos6, {1}]
 
 (* ~TabSwaps *)
 
 BfsTabScan[tab_, GetNode_] := Module[
     {bfsS},
+    DistributeDefinitions[GetNode];
     bfsS[{},close_]:=close;
     bfsS[open_, close_]:=bfsS[
-        Union[Rest@open,Complement[GetNode@First@open, close]],
-        Append[close, First@open]
+        Complement[
+            Union@@ParallelMap[GetNode,open],
+            open,close
+            ],
+        Union[open,close]
     ];
     bfsS[{tab}, {}]
 ]
